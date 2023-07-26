@@ -29,7 +29,7 @@ function PasswordForm() {
     if (password.length === 0) {
       toast.error('Please generate a password');
     }
-    if(passwordInputRef.current) {
+    if(passwordInputRef.current && password.length !== 0) {
       const passwordToCopy = passwordInputRef.current.value;
       try {
         await navigator.clipboard.writeText(passwordToCopy);
