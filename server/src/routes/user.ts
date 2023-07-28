@@ -6,7 +6,7 @@ const userRouter = ()=> {
     const controller = userController();
 
     route.post('/register', controller.registerUser);
-    route.get('/profile', controller.getUser);
+    route.post('/login', controller.userLogin);
     route.post('/save-password/:name', controller.savePassword);
     route.get('/get-passwords/:name', controller.getAllPasswords);
 

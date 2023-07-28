@@ -1,9 +1,20 @@
-import PasswordForm from "./components/PasswordForm"
+import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import { UserLogin } from "./components/UserLogin";
+import { UserRegister } from "./components/UserSignup";
+import SavedPasswords from "./components/SavedPasswords";
 
 function App() {
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-customPurple to-customBlue">
-      <PasswordForm />
+    <div>
+      <Router>
+        <Routes>
+          <Route path="/*" element={<HomePage/>}/>
+          <Route path="/login" element={ <UserLogin/>} />
+          <Route path="/register" element={ <UserRegister/>} />
+          <Route path="/user-passwords" element={<SavedPasswords/>} />
+        </Routes>
+      </Router>
     </div>
   )
 }

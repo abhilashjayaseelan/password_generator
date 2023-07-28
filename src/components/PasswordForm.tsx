@@ -1,8 +1,10 @@
-import { FaClipboard } from "react-icons/fa";
+import { FaClipboard, FaSave } from "react-icons/fa";
 import { useState, FormEvent, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 import usePasswordGenerator from "../hooks/usePasswordGenerator";
 import { getPasswordStrength } from "../helpers/getPasswordStrength";
+import { savePassword } from "../api/user";
 
 function PasswordForm() {
   const [length, setLength] = useState<number>(8);
@@ -10,14 +12,20 @@ function PasswordForm() {
   const [includeLowerCase, setIncludeLowerCase] = useState<boolean>(false);
   const [includeNumbers, setIncludeNumbers] = useState<boolean>(false);
   const [passwordStrength, setPasswordStrength] = useState<string>("");
+
+  const [passwordName, setPasswordName] = useState<string>('');
+
   const [includeSpecialChars, setIncludeSpecialChars] =
     useState<boolean>(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>("");
   const [clicked, setClicked] = useState<boolean>(false);
 
   const { password, generatePassword } = usePasswordGenerator();
   const passwordInputRef = useRef<HTMLInputElement | null>(null);
+
+  const navigate = useNavigate();
 
   const handleGeneratePassword = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,17 +38,9 @@ function PasswordForm() {
     );
   };
 
-  const handleLoginLogout = () => {
-    if (isLoggedIn) {
-      // Implement logout logic here
-      setIsLoggedIn(false);
-      toast.success("Logged out successfully");
-    } else {
-      // Implement login logic here
-      // For demo purposes, we are setting isLoggedIn to true immediately
-      setIsLoggedIn(true);
-      toast.success("Logged in successfully");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("userName");
+    setIsLoggedIn(false);
   };
 
   const HandleCopyToClipBoard = async (e: FormEvent<HTMLFormElement>) => {
@@ -59,6 +59,24 @@ function PasswordForm() {
     }
   };
 
+  const handlePasswordSave = async(e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const userName = localStorage.getItem('userName');
+    if (!userName) {
+      toast.error("Please login");
+      return;
+    } else if (passwordName.length === 0) {
+      toast.error('Type a name for saving password');
+      return;
+    }
+    await savePassword(userName,passwordName, password).then(()=> {
+      toast.success('Password saved');
+      setTimeout(() => {
+        navigate('/user-passwords')
+      }, 2000);
+    })
+  }
+
   const numSelectedFields = [
     includeUpperCase,
     includeLowerCase,
@@ -71,11 +89,19 @@ function PasswordForm() {
     setPasswordStrength(level);
   }, [numSelectedFields, password]);
 
+  useEffect(() => {
+    const user = localStorage.getItem("userName");
+    if (user) {
+      setIsLoggedIn(true);
+      setUserName(user);
+    }
+  }, []);
+
   return (
     <section>
       <div className="flex flex-col items-center">
         <div
-          className="w-16 h-16 bg-gray-400 rounded-full cursor-pointer absolute top-5 right-5"
+          className="w-12 h-12 bg-gray-400 rounded-full cursor-pointer absolute top-5 right-5"
           onClick={() => setClicked(!clicked)}
         >
           {isLoggedIn ? "🔒" : "👤"}
@@ -85,18 +111,32 @@ function PasswordForm() {
           <div className="bg-white rounded-lg shadow p-4 absolute top-20 right-5">
             {isLoggedIn && (
               <>
-                <div className="hover: bg-blue-gray-100">View Saved Passwords</div>
-                {/* <div>Account Settings</div> */}
-                <div onClick={handleLoginLogout}>Logout</div>
+                <div>Hi.. {userName}</div>
+                <div
+                  className="cursor-pointer"
+                  onClick={() => navigate("/user-passwords")}
+                >
+                  View Saved Passwords
+                </div>
+                <div onClick={handleLogout} className="cursor-pointer">
+                  Logout
+                </div>
               </>
             )}
-            {!isLoggedIn && <div className="hover:bg-blue-gray-100 cursor-pointer">Login</div>}
+            {!isLoggedIn && (
+              <div
+                className="hover:bg-blue-gray-100 cursor-pointer"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </div>
+            )}
           </div>
         )}
         <div className="text-white font-semibold text-5xl p-10">
           🔑Strong Password🔑
         </div>
-        <div className="w-80 h-96 bg-customDarkBlue flex justify-center items-center rounded-lg p-8">
+        <div className="w-80 h-auto bg-customDarkBlue flex justify-center items-center rounded-lg p-8">
           <form className="w-full" onSubmit={handleGeneratePassword}>
             <div className="relative mb-4">
               <input
@@ -115,6 +155,26 @@ function PasswordForm() {
                 <FaClipboard />
               </button>
             </div>
+
+            {password.length > 6 && (
+              <div className="relative mb-4">
+                <input
+                  className="w-full p-2 pr-12 rounded-md bg-white"
+                  type="text"
+                  placeholder="Save as"
+                  onChange={(e)=> setPasswordName(e.target.value)}
+                  ref={passwordInputRef}
+                />
+                <button
+                  className="absolute right-2 top-2 text-customPurple text-2xl cursor-pointer"
+                  title="Save Password"
+                  onClick={handlePasswordSave}
+                >
+                  <FaSave />
+                </button>
+              </div>
+            )}
+
             <div className="mb-4 flex items-center justify-between">
               <label htmlFor="length" className="text-white">
                 Length

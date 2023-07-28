@@ -26,16 +26,15 @@ const userController = () => {
     }
   };
 
-  const getUser = async (req: Request, res: Response) => {
+  const userLogin = async (req: Request, res: Response) => {
     const { userName, password } = req.body;
-
     try {
       const user: user | null = await User.findOne({ userName, password });
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      res.status(200).json({ message: "success", user });
+      res.status(200).json({ message: "success", user});
     } catch (error) {
       console.error("error while finding user", error);
       res.status(500).json({ message: "failed to find user" });
@@ -86,7 +85,7 @@ const userController = () => {
 
   return {
     registerUser,
-    getUser,
+    userLogin,
     savePassword,
     getAllPasswords
   };
