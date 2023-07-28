@@ -13,6 +13,9 @@ function PasswordForm() {
   const [includeSpecialChars, setIncludeSpecialChars] =
     useState<boolean>(false);
 
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [clicked, setClicked] = useState<boolean>(false);
+
   const { password, generatePassword } = usePasswordGenerator();
   const passwordInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -25,6 +28,19 @@ function PasswordForm() {
       includeNumbers,
       includeSpecialChars
     );
+  };
+
+  const handleLoginLogout = () => {
+    if (isLoggedIn) {
+      // Implement logout logic here
+      setIsLoggedIn(false);
+      toast.success("Logged out successfully");
+    } else {
+      // Implement login logic here
+      // For demo purposes, we are setting isLoggedIn to true immediately
+      setIsLoggedIn(true);
+      toast.success("Logged in successfully");
+    }
   };
 
   const HandleCopyToClipBoard = async (e: FormEvent<HTMLFormElement>) => {
@@ -58,7 +74,28 @@ function PasswordForm() {
   return (
     <section>
       <div className="flex flex-col items-center">
-        <div className="text-white font-semibold text-5xl p-10">🔑Strong Password🔑</div>
+        <div
+          className="w-16 h-16 bg-gray-400 rounded-full cursor-pointer absolute top-5 right-5"
+          onClick={() => setClicked(!clicked)}
+        >
+          {isLoggedIn ? "🔒" : "👤"}
+        </div>
+        {/* Dropdown */}
+        {clicked && (
+          <div className="bg-white rounded-lg shadow p-4 absolute top-20 right-5">
+            {isLoggedIn && (
+              <>
+                <div className="hover: bg-blue-gray-100">View Saved Passwords</div>
+                {/* <div>Account Settings</div> */}
+                <div onClick={handleLoginLogout}>Logout</div>
+              </>
+            )}
+            {!isLoggedIn && <div className="hover:bg-blue-gray-100 cursor-pointer">Login</div>}
+          </div>
+        )}
+        <div className="text-white font-semibold text-5xl p-10">
+          🔑Strong Password🔑
+        </div>
         <div className="w-80 h-96 bg-customDarkBlue flex justify-center items-center rounded-lg p-8">
           <form className="w-full" onSubmit={handleGeneratePassword}>
             <div className="relative mb-4">
